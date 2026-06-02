@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 660 160">
+  <defs>
+    <style>.cls-1{fill:#050928;}.cls-2{fill:url(#gradient_74);}</style>
+    <linearGradient id="gradient_74" x1="-27.11" y1="122.98" x2="-99.66" y2="32.29" gradientTransform="matrix(1, 0.03, -0.03, 1, 127.9, 9.41)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1ea9ef"/>
+      <stop offset="0.27" stop-color="#6852f2"/>
+      <stop offset="0.54" stop-color="#ab56d9"/>
+      <stop offset="0.78" stop-color="#f160b5"/>
+      <stop offset="1" stop-color="#ef8861"/>
+    </linearGradient>
+  </defs>
+  <!-- Phoenix icon mark -->
+  <path class="cls-2" d="M13.23,134.5l63.61,0a54.25,54.25,0,0,0,54.25-54.25h0A54.25,54.25,0,0,0,76.84,26H32.09L25.37,66.85c5.35-2.07,13.13-7.27,24.73-2l.39,28.47s-34-.39-37.22,40.56m90-47.91c-3.53-2.08-13.43-2.85-22.9,5.28S55.13,94.2,55.13,94.2L55,64.58C71.27,43.06,106.81,88.1,103.28,86Z"/>
+  <!-- OpenDraw wordmark -->
+  <text x="152" y="116" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="88" class="cls-1" letter-spacing="-2">OpenDraw</text>
+</svg>
