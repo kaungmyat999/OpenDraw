@@ -3,6 +3,13 @@ import { Drawnix } from '@drawnix/drawnix';
 import { PlaitBoard, PlaitElement, PlaitTheme, Viewport } from '@plait/core';
 import localforage from 'localforage';
 import { supabase } from '../lib/supabase';
+import {
+  getDrawing,
+  getLatestDrawing,
+  countDrawings,
+  createDrawing,
+  updateContent,
+} from '../lib/drawings';
 import { AuthModal } from './auth-modal';
 import { CanvasPicker, CanvasRecord } from './canvas-picker';
 
@@ -45,18 +52,10 @@ export function App() {
   };
 
   const loadCanvas = async (uid: string, drawingId?: string) => {
-    let query = supabase
-      .from('drawings')
-      .select('id, content')
-      .eq('user_id', uid);
-
-    if (drawingId) {
-      query = query.eq('id', drawingId);
-    } else {
-      query = query.order('updated_at', { ascending: false }).limit(1);
-    }
-
-    const { data } = await query.single();
+    // Try the requested canvas; fall back to the most recent if it's gone
+    // (e.g. a stale last-open id whose canvas was deleted).
+    let data = drawingId ? await getDrawing(uid, drawingId) : null;
+    if (!data) data = await getLatestDrawing(uid);
 
     if (data?.content) {
       setDrawingId(data.id);
@@ -70,32 +69,18 @@ export function App() {
   };
 
   const createNewCanvas = async (uid: string, isFirst = false) => {
-    const { count } = await supabase
-      .from('drawings')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', uid);
+    const count = await countDrawings(uid);
+    const name = `Canvas ${count + 1}`;
+    const { id } = await createDrawing(uid, name, { children: [] });
 
-    const name = `Canvas ${(count ?? 0) + 1}`;
-    const { data } = await supabase
-      .from('drawings')
-      .insert({ user_id: uid, name, content: { children: [] } })
-      .select('id')
-      .single();
-
-    if (data) setDrawingId(data.id);
+    setDrawingId(id);
     setValueSync({ children: [] });
     setTutorial(true);
   };
 
   const saveCurrentCanvas = async (content?: AppValue) => {
     if (!currentDrawingIdRef.current) return;
-    await supabase
-      .from('drawings')
-      .update({
-        content: content ?? valueRef.current,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', currentDrawingIdRef.current);
+    await updateContent(currentDrawingIdRef.current, content ?? valueRef.current);
   };
 
   const syncToSupabase = (newValue: AppValue) => {

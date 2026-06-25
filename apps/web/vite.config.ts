@@ -17,6 +17,18 @@ export default defineConfig({
     host: 'localhost',
   },
 
+  // Sass @import and global built-ins (unquote, etc.) are deprecated in Dart
+  // Sass and emit noisy warnings — mostly from @plait/* deps. Silence them;
+  // quietDeps covers node_modules, silenceDeprecations covers workspace styles.
+  css: {
+    preprocessorOptions: {
+      scss: {
+        quietDeps: true,
+        silenceDeprecations: ['import', 'global-builtin'],
+      },
+    },
+  },
+
   plugins: [react(), nxViteTsPaths()],
 
   // Uncomment this if you are using workers.

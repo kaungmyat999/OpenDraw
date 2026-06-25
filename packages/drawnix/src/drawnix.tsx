@@ -1,5 +1,6 @@
 import { Board, BoardChangeData, Wrapper } from '@plait-board/react-board';
 import {
+  getSelectedElements,
   PlaitBoard,
   PlaitBoardOptions,
   PlaitElement,
@@ -10,7 +11,7 @@ import {
   ThemeColorMode,
   Viewport,
 } from '@plait/core';
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { withGroup } from '@plait/common';
 import { withDraw } from '@plait/draw';
 import { MindThemeColors, withMind } from '@plait/mind';
@@ -41,6 +42,7 @@ import { I18nProvider } from './i18n';
 import { Tutorial } from './components/tutorial';
 import { LASER_POINTER_CLASS_NAME } from './utils/laser-pointer';
 import { DEFAULT_FREEHAND_PRESETS } from './plugins/freehand/presets';
+import { canCopySelectionAs, copySelectionAsPng } from './utils/image';
 
 export type DrawnixProps = {
   value: PlaitElement[];
@@ -104,6 +106,30 @@ export const Drawnix: React.FC<DrawnixProps> = ({
   if (board) {
     board.appState = appState;
   }
+
+  // Copy the current selection as a PNG image (Cmd/Ctrl+C). We intercept the
+  // native `copy` event in the capture phase on `window` so it runs before
+  // Plait's built-in element copy and prevents it from overwriting the image
+  // we put on the clipboard. Falls through to default copy when nothing is
+  // selected or when copying text in an input / editable field.
+  useEffect(() => {
+    if (!board) return;
+    const handleCopy = (event: ClipboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      const isEditingText =
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        !!target?.isContentEditable;
+      if (isEditingText || PlaitBoard.hasBeenTextEditing(board)) return;
+      if (getSelectedElements(board).length === 0) return;
+      if (!canCopySelectionAs('png')) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      void copySelectionAsPng(board).catch(() => undefined);
+    };
+    window.addEventListener('copy', handleCopy, true);
+    return () => window.removeEventListener('copy', handleCopy, true);
+  }, [board]);
 
   const updateAppState = (newAppState: Partial<DrawnixState>) => {
     setAppState((currentAppState) => ({

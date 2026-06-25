@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import {
+  listCanvases,
+  renameDrawing,
+  deleteDrawing,
+  CanvasMeta,
+} from '../lib/drawings';
 import styles from './canvas-picker.module.scss';
 
-export type CanvasRecord = {
-  id: string;
-  name: string;
-  updated_at: string;
-};
+export type CanvasRecord = CanvasMeta;
 
 type Props = {
   currentId: string | null;
@@ -18,6 +20,7 @@ type Props = {
 export function CanvasPicker({ currentId, onSelect, onDeleted, onClose }: Props) {
   const [canvases, setCanvases] = useState<CanvasRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
@@ -25,15 +28,20 @@ export function CanvasPicker({ currentId, onSelect, onDeleted, onClose }: Props)
 
   useEffect(() => {
     const load = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const { data } = await supabase
-        .from('drawings')
-        .select('id, name, updated_at')
-        .eq('user_id', user.id)
-        .order('updated_at', { ascending: false });
-      setCanvases(data ?? []);
-      setLoading(false);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          setError('Not signed in.');
+          return;
+        }
+        setCanvases(await listCanvases(user.id));
+      } catch (e) {
+        console.error('Failed to load canvases', e);
+        setError(e instanceof Error ? e.message : 'Failed to load canvases.');
+      } finally {
+        // Always clear the spinner, even on error, so the modal never hangs.
+        setLoading(false);
+      }
     };
     load();
   }, []);
@@ -52,7 +60,7 @@ export function CanvasPicker({ currentId, onSelect, onDeleted, onClose }: Props)
   const commitRename = async (id: string) => {
     const trimmed = editingName.trim();
     if (!trimmed) { setEditingId(null); return; }
-    await supabase.from('drawings').update({ name: trimmed }).eq('id', id);
+    await renameDrawing(id, trimmed);
     setCanvases((prev) => prev.map((c) => c.id === id ? { ...c, name: trimmed } : c));
     setEditingId(null);
   };
@@ -70,7 +78,7 @@ export function CanvasPicker({ currentId, onSelect, onDeleted, onClose }: Props)
 
   const confirmDelete = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    await supabase.from('drawings').delete().eq('id', id);
+    await deleteDrawing(id);
     setCanvases((prev) => prev.filter((c) => c.id !== id));
     setConfirmDeleteId(null);
     onDeleted(id);
@@ -97,6 +105,8 @@ export function CanvasPicker({ currentId, onSelect, onDeleted, onClose }: Props)
 
         {loading ? (
           <p className={styles.empty}>Loading…</p>
+        ) : error ? (
+          <p className={styles.empty}>{error}</p>
         ) : canvases.length === 0 ? (
           <p className={styles.empty}>No canvases yet.</p>
         ) : (
