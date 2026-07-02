@@ -125,6 +125,12 @@ const enTranslations: Translations = {
   'cleanConfirm.cancel': 'Cancel',
   'cleanConfirm.ok': 'OK',
 
+  // Export image confirm dialog
+  'exportConfirm.title': 'Export Image',
+  'exportConfirm.description':
+    'This will download the board as a {format} file. Do you want to continue?',
+  'exportConfirm.confirm': 'Export',
+
   // Link popup items
   'popupLink.delLink': 'Delete Link',
 

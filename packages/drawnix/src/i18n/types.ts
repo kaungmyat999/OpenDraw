@@ -127,6 +127,11 @@ export interface Translations {
   'cleanConfirm.cancel': string;
   'cleanConfirm.ok': string;
 
+  // Export image confirm dialog
+  'exportConfirm.title': string;
+  'exportConfirm.description': string;
+  'exportConfirm.confirm': string;
+
   // Link popup items
   'popupLink.delLink': string;
 

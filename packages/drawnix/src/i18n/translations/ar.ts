@@ -124,6 +124,11 @@ const arTranslations: Translations = {
     "cleanConfirm.cancel": "إلغاء",
     "cleanConfirm.ok": "موافق",
 
+    // Export image confirm dialog
+    "exportConfirm.title": "تصدير صورة",
+    "exportConfirm.description": "سيؤدي هذا إلى تنزيل اللوحة كملف {format}. هل تريد المتابعة؟",
+    "exportConfirm.confirm": "تصدير",
+
     // Link popup items
     "popupLink.delLink": "حذف الرابط",
 

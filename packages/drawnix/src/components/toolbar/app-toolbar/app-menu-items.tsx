@@ -16,10 +16,9 @@ import {
   ThemeColorMode,
   Viewport,
 } from '@plait/core';
-import { saveAsJSON, saveJSON } from '../../../data/json';
+import { saveJSON } from '../../../data/json';
 import MenuItem from '../../menu/menu-item';
-import { saveAsImage, saveAsSvg } from '../../../utils/image';
-import { useDrawnix } from '../../../hooks/use-drawnix';
+import { useDrawnix, ImageExportFormat } from '../../../hooks/use-drawnix';
 import { useI18n } from '../../../i18n';
 import Menu from '../../menu/menu';
 import { useContext } from 'react';
@@ -47,7 +46,7 @@ export const SaveToFile = () => {
       }}
       icon={SaveFileIcon}
       aria-label={t('menu.saveFile')}
-      shortcut={getShortcutKey('CtrlOrCmd+S')}
+      shortcut={getShortcutKey('CtrlOrCmd+Shift+S')}
     >{t('menu.saveFile')}</MenuItem>
   );
 };
@@ -65,7 +64,7 @@ export const SaveToCloud = () => {
       onSelect={onSave}
       icon={CloudSaveIcon}
       aria-label={t('menu.save')}
-      shortcut={getShortcutKey('CtrlOrCmd+Shift+S')}
+      shortcut={getShortcutKey('CtrlOrCmd+S')}
     >
       {t('menu.save')}
     </MenuItem>
@@ -112,15 +111,23 @@ export const OpenCanvas = () => {
 OpenCanvas.displayName = 'OpenCanvas';
 
 export const SaveAsImage = () => {
-  const board = useBoard();
   const menuContentProps = useContext(MenuContentPropsContext);
+  const { setAppState } = useDrawnix();
   const { t } = useI18n();
+  // Request an export; the confirm dialog performs the actual download once the
+  // user confirms.
+  const requestExport = (format: ImageExportFormat) => {
+    setAppState((currentAppState) => ({
+      ...currentAppState,
+      pendingImageExport: format,
+    }));
+  };
   return (
     <MenuItem
       icon={ExportImageIcon}
       data-testid="image-export-button"
       onSelect={() => {
-        saveAsImage(board, true);
+        requestExport('png');
       }}
       submenu={
         <Menu onSelect={() => {
@@ -132,7 +139,7 @@ export const SaveAsImage = () => {
         }}>
           <MenuItem
             onSelect={() => {
-              saveAsSvg(board);
+              requestExport('svg');
             }}
             aria-label={t('menu.exportImage.svg')}
           >
@@ -140,7 +147,7 @@ export const SaveAsImage = () => {
           </MenuItem>
           <MenuItem
             onSelect={() => {
-              saveAsImage(board, true);
+              requestExport('png');
             }}
             aria-label={t('menu.exportImage.png')}
           >
@@ -148,7 +155,7 @@ export const SaveAsImage = () => {
           </MenuItem>
           <MenuItem
             onSelect={() => {
-              saveAsImage(board, false);
+              requestExport('jpg');
             }}
             aria-label={t('menu.exportImage.jpg')}
           >

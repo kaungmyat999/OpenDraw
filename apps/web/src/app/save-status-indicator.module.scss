@@ -1,0 +1,75 @@
+.indicator {
+  position: fixed;
+  bottom: 36px;
+  left: 36px;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  font-size: 12px;
+  line-height: 1;
+  color: #333;
+  user-select: none;
+  pointer-events: none;
+  backdrop-filter: blur(4px);
+  transition: opacity 0.2s ease;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.label {
+  white-space: nowrap;
+}
+
+.saved {
+  .dot {
+    background: #22a06b;
+  }
+}
+
+.unsaved {
+  .dot {
+    background: #9aa0a6;
+  }
+}
+
+.error {
+  color: #d1453b;
+
+  .dot {
+    background: #d1453b;
+  }
+}
+
+.saving {
+  .dot {
+    background: #f5a623;
+    animation: save-status-pulse 1s ease-in-out infinite;
+  }
+}
+
+@keyframes save-status-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@media (max-width: 768px) {
+  .indicator {
+    bottom: 16px;
+    left: 16px;
+  }
+}

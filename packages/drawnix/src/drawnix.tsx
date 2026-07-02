@@ -17,6 +17,8 @@ import { withDraw } from '@plait/draw';
 import { MindThemeColors, withMind } from '@plait/mind';
 import MobileDetect from 'mobile-detect';
 import { withMindExtend } from './plugins/with-mind-extend';
+import { withMindDeletePromote } from './plugins/with-mind-delete-promote';
+import { withStandardRoot } from './plugins/with-standard-root';
 import { withCommonPlugin } from './plugins/with-common';
 import { CreationToolbar } from './components/toolbar/creation-toolbar';
 import { ZoomToolbar } from './components/toolbar/zoom-toolbar';
@@ -36,6 +38,7 @@ import {
 import { ClosePencilToolbar } from './components/toolbar/pencil-mode-toolbar';
 import { TTDDialog } from './components/ttd-dialog/ttd-dialog';
 import { CleanConfirm } from './components/clean-confirm/clean-confirm';
+import { ExportImageConfirm } from './components/export-image-confirm/export-image-confirm';
 import { buildTextLinkPlugin } from './plugins/with-text-link';
 import { LinkPopup } from './components/popup/link-popup/link-popup';
 import { I18nProvider } from './i18n';
@@ -98,6 +101,7 @@ export const Drawnix: React.FC<DrawnixProps> = ({
       fileHandle: null,
       openDialogType: null,
       openCleanConfirm: false,
+      pendingImageExport: null,
     };
   });
 
@@ -106,6 +110,11 @@ export const Drawnix: React.FC<DrawnixProps> = ({
   if (board) {
     board.appState = appState;
   }
+
+  // Keep the latest onSave available to the (init-time) hotkey plugin without
+  // capturing a stale closure.
+  const onSaveRef = useRef(onSave);
+  onSaveRef.current = onSave;
 
   // Copy the current selection as a PNG image (Cmd/Ctrl+C). We intercept the
   // native `copy` event in the capture phase on `window` so it runs before
@@ -143,8 +152,10 @@ export const Drawnix: React.FC<DrawnixProps> = ({
     withGroup,
     withMind,
     withMindExtend,
+    withStandardRoot,
+    withMindDeletePromote,
     withCommonPlugin,
-    buildDrawnixHotkeyPlugin(updateAppState),
+    buildDrawnixHotkeyPlugin(updateAppState, () => onSaveRef.current?.()),
     withFreehand,
     buildPencilPlugin(updateAppState),
     buildTextLinkPlugin(updateAppState),
@@ -196,6 +207,9 @@ export const Drawnix: React.FC<DrawnixProps> = ({
             <ClosePencilToolbar></ClosePencilToolbar>
             <TTDDialog container={containerRef.current}></TTDDialog>
             <CleanConfirm container={containerRef.current}></CleanConfirm>
+            <ExportImageConfirm
+              container={containerRef.current}
+            ></ExportImageConfirm>
           </Wrapper>
           <canvas className={`${LASER_POINTER_CLASS_NAME} mouse-course-hidden`}></canvas>
         </div>

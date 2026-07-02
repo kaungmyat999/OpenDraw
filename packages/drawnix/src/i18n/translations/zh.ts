@@ -123,6 +123,11 @@ const zhTranslations: Translations = {
   'cleanConfirm.cancel': '取消',
   'cleanConfirm.ok': '确认',
 
+  // Export image confirm dialog
+  'exportConfirm.title': '导出图片',
+  'exportConfirm.description': '这将会把画布下载为 {format} 文件。你是否要继续?',
+  'exportConfirm.confirm': '导出',
+
   // Link popup items
   'popupLink.delLink': '移除连结',
 

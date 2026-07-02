@@ -129,6 +129,12 @@ const ruTranslations: Translations = {
   'cleanConfirm.cancel': 'Отмена',
   'cleanConfirm.ok': 'ОК',
 
+  // Export image confirm dialog
+  'exportConfirm.title': 'Экспорт изображения',
+  'exportConfirm.description':
+    'Доска будет загружена как файл {format}. Вы хотите продолжить?',
+  'exportConfirm.confirm': 'Экспорт',
+
   // Link popup items
   'popupLink.delLink': 'Удалить ссылку',
 

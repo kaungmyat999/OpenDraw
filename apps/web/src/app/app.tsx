@@ -12,6 +12,7 @@ import {
 } from '../lib/drawings';
 import { AuthModal } from './auth-modal';
 import { CanvasPicker, CanvasRecord } from './canvas-picker';
+import { SaveStatusIndicator, SaveStatus } from './save-status-indicator';
 
 type AppValue = {
   children: PlaitElement[];
@@ -20,13 +21,32 @@ type AppValue = {
 };
 
 const CURRENT_DRAWING_ID_KEY = 'current_drawing_id';
-const SYNC_DEBOUNCE_MS = 600;
+// Local per-canvas content backup, keyed by drawing id.
+const LOCAL_CONTENT_PREFIX = 'canvas_content_';
+// Batched server upload cadence: local saves are immediate, the server is
+// updated at most once per this interval.
+const AUTO_SAVE_INTERVAL_MS = 30000;
 
 localforage.config({
   name: 'OpenDraw',
   storeName: 'opendraw_store',
   driver: [localforage.INDEXEDDB, localforage.LOCALSTORAGE],
 });
+
+// Cheap, stable fingerprint (djb2) of the diagram itself — elements and theme
+// only. Viewport (pan/zoom) and selection are intentionally excluded so that
+// mouse movement / panning does not count as a change worth saving.
+function hashContent(value: AppValue): string {
+  const json = JSON.stringify({
+    children: value.children ?? [],
+    theme: value.theme ?? null,
+  });
+  let hash = 5381;
+  for (let i = 0; i < json.length; i++) {
+    hash = (hash * 33) ^ json.charCodeAt(i);
+  }
+  return (hash >>> 0).toString(36);
+}
 
 export function App() {
   const [value, setValue] = useState<AppValue>({ children: [] });
@@ -35,10 +55,15 @@ export function App() {
   const [userId, setUserId] = useState<string | null>(null);
   const [currentDrawingId, setCurrentDrawingId] = useState<string | null>(null);
   const [showPicker, setShowPicker] = useState(false);
-  const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('saved');
   // Ref keeps the latest ID available inside debounced callbacks without stale closure
   const currentDrawingIdRef = useRef<string | null>(null);
   const valueRef = useRef<AppValue>({ children: [] });
+  // Tracks whether there are edits not yet persisted to the cloud
+  const dirtyRef = useRef(false);
+  // Hash of the content currently persisted on the server; used to skip
+  // redundant server writes when nothing meaningful changed.
+  const lastSyncedHashRef = useRef<string | null>(null);
 
   const setDrawingId = (id: string | null) => {
     setCurrentDrawingId(id);
@@ -61,6 +86,7 @@ export function App() {
       setDrawingId(data.id);
       const cloudValue = data.content as AppValue;
       setValueSync(cloudValue);
+      markSaved(cloudValue);
       setTutorial(!cloudValue.children?.length);
     } else {
       // No canvases yet — create the first one
@@ -75,17 +101,57 @@ export function App() {
 
     setDrawingId(id);
     setValueSync({ children: [] });
+    markSaved({ children: [] });
     setTutorial(true);
+  };
+
+  // Marks the canvas as persisted (no pending edits), e.g. right after load.
+  const markSaved = (content?: AppValue) => {
+    dirtyRef.current = false;
+    lastSyncedHashRef.current = hashContent(content ?? valueRef.current);
+    setSaveStatus('saved');
+  };
+
+  // Persist the content locally (fast, always) so nothing is lost even if the
+  // server write is skipped or fails.
+  const saveLocal = (content: AppValue) => {
+    const id = currentDrawingIdRef.current;
+    if (!id) return;
+    localforage.setItem(LOCAL_CONTENT_PREFIX + id, content).catch((error) => {
+      console.error('Failed to save canvas locally', error);
+    });
   };
 
   const saveCurrentCanvas = async (content?: AppValue) => {
     if (!currentDrawingIdRef.current) return;
-    await updateContent(currentDrawingIdRef.current, content ?? valueRef.current);
+    const toSave = content ?? valueRef.current;
+    const hash = hashContent(toSave);
+    // Always keep the local copy up to date first.
+    saveLocal(toSave);
+    // Skip the network round-trip when the server already has this content.
+    if (hash === lastSyncedHashRef.current) {
+      dirtyRef.current = false;
+      setSaveStatus('saved');
+      return;
+    }
+    setSaveStatus('saving');
+    try {
+      await updateContent(currentDrawingIdRef.current, toSave);
+      lastSyncedHashRef.current = hash;
+      dirtyRef.current = false;
+      setSaveStatus('saved');
+    } catch (error) {
+      console.error('Failed to save canvas', error);
+      setSaveStatus('error');
+    }
   };
 
-  const syncToSupabase = (newValue: AppValue) => {
-    if (syncTimer.current) clearTimeout(syncTimer.current);
-    syncTimer.current = setTimeout(() => saveCurrentCanvas(newValue), SYNC_DEBOUNCE_MS);
+  // Local-first: persist the edit locally right away and mark it pending. The
+  // actual server upload is batched by the periodic interval below.
+  const queueLocalChange = (newValue: AppValue) => {
+    saveLocal(newValue);
+    dirtyRef.current = true;
+    setSaveStatus('unsaved');
   };
 
   useEffect(() => {
@@ -126,15 +192,28 @@ export function App() {
     return () => authListener.subscription.unsubscribe();
   }, []);
 
+  // Batched server upload: local saves happen immediately on each edit; the
+  // accumulated changes are pushed to the server on this fixed cadence.
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (dirtyRef.current && currentDrawingIdRef.current) {
+        saveCurrentCanvas();
+      }
+    }, AUTO_SAVE_INTERVAL_MS);
+    return () => clearInterval(interval);
+    // saveCurrentCanvas relies only on refs / stable setters, so an empty dep
+    // array is safe here.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleNewCanvas = async () => {
     if (!userId) return;
-    if (syncTimer.current) clearTimeout(syncTimer.current);
+    // Flush pending edits to the server before switching away.
     await saveCurrentCanvas();
     await createNewCanvas(userId);
   };
 
   const handleSave = async () => {
-    if (syncTimer.current) clearTimeout(syncTimer.current);
     await saveCurrentCanvas();
   };
 
@@ -145,7 +224,6 @@ export function App() {
       setShowPicker(false);
       return;
     }
-    if (syncTimer.current) clearTimeout(syncTimer.current);
     await saveCurrentCanvas();
     await loadCanvas(userId, canvas.id);
     setShowPicker(false);
@@ -165,6 +243,7 @@ export function App() {
 
   return (
     <>
+      <SaveStatusIndicator status={saveStatus} />
       {showPicker && (
         <CanvasPicker
           currentId={currentDrawingId}
@@ -180,7 +259,13 @@ export function App() {
         onChange={(v) => {
           const newValue = v as AppValue;
           setValueSync(newValue);
-          syncToSupabase(newValue);
+          // Only react when the diagram itself changed. Selection, hover,
+          // panning and zooming all fire onChange but leave the content hash
+          // untouched. On a real edit, save locally now; the server upload is
+          // batched by the 30s interval.
+          if (hashContent(newValue) !== lastSyncedHashRef.current) {
+            queueLocalChange(newValue);
+          }
           if (newValue.children && newValue.children.length > 0) {
             setTutorial(false);
           }

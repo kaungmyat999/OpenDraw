@@ -127,6 +127,12 @@ const viTranslations: Translations = {
     'cleanConfirm.cancel': 'Hủy',
     'cleanConfirm.ok': 'Đồng ý',
 
+    // Export image confirm dialog
+    'exportConfirm.title': 'Xuất hình ảnh',
+    'exportConfirm.description':
+        'Thao tác này sẽ tải bảng xuống dưới dạng tệp {format}. Bạn có muốn tiếp tục không?',
+    'exportConfirm.confirm': 'Xuất',
+
     // Link popup items
     'popupLink.delLink': 'Xóa liên kết',
 

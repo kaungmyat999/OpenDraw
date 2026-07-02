@@ -41,6 +41,9 @@ export type LinkState = {
   isHoveringOrigin: boolean;
 };
 
+// Image export format the user can download the board as.
+export type ImageExportFormat = 'svg' | 'png' | 'jpg';
+
 export type DrawnixState = {
   pointer: DrawnixPointerType;
   isMobile: boolean;
@@ -50,6 +53,9 @@ export type DrawnixState = {
   fileHandle: DrawnixFileHandle;
   openDialogType: DialogType | null;
   openCleanConfirm: boolean;
+  // Set to a format when an image export is requested; the confirm dialog
+  // reads this and performs the actual export once the user confirms.
+  pendingImageExport?: ImageExportFormat | null;
   linkState?: LinkState | null;
 };
 

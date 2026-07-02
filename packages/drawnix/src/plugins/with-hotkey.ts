@@ -5,16 +5,17 @@ import {
   PlaitPointerType,
 } from '@plait/core';
 import { isHotkey } from 'is-hotkey';
-import { addImage, saveAsImage } from '../utils/image';
-import { saveAsJSON, saveJSON } from '../data/json';
-import { DrawnixBoard, DrawnixState } from '../hooks/use-drawnix';
+import { addImage } from '../utils/image';
+import { saveAsJSON } from '../data/json';
+import { DrawnixState } from '../hooks/use-drawnix';
 import { BoardCreationMode, setCreationMode } from '@plait/common';
 import { MindPointerType } from '@plait/mind';
 import { FreehandShape } from './freehand/type';
 import { ArrowLineShape, BasicShapes } from '@plait/draw';
 
 export const buildDrawnixHotkeyPlugin = (
-  updateAppState: (appState: Partial<DrawnixState>) => void
+  updateAppState: (appState: Partial<DrawnixState>) => void,
+  onSave?: () => void
 ) => {
   const withDrawnixHotkey = (board: PlaitBoard) => {
     const { globalKeyDown, keyDown } = board;
@@ -29,7 +30,8 @@ export const buildDrawnixHotkeyPlugin = (
         !PlaitBoard.hasBeenTextEditing(board)
       ) {
         if (isHotkey(['mod+shift+e'], { byKey: true })(event)) {
-          saveAsImage(board, true);
+          // Ask for confirmation before exporting, even via the hotkey.
+          updateAppState({ pendingImageExport: 'png' });
           event.preventDefault();
           return;
         }
@@ -41,11 +43,8 @@ export const buildDrawnixHotkeyPlugin = (
           return;
         }
         if (isHotkey(['mod+s'], { byKey: true })(event)) {
-          saveJSON(board, (board as DrawnixBoard).appState.fileHandle).then(
-            ({ fileHandle }) => {
-              updateAppState({ fileHandle });
-            }
-          );
+          // Cmd/Ctrl+S saves the current canvas (to the cloud).
+          onSave?.();
           event.preventDefault();
           return;
         }
