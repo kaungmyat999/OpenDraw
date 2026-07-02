@@ -18,6 +18,7 @@ import { MindThemeColors, withMind } from '@plait/mind';
 import MobileDetect from 'mobile-detect';
 import { withMindExtend } from './plugins/with-mind-extend';
 import { withMindDeletePromote } from './plugins/with-mind-delete-promote';
+import { withRootDragToChild } from './plugins/with-root-drag-to-child';
 import { withStandardRoot } from './plugins/with-standard-root';
 import { withCommonPlugin } from './plugins/with-common';
 import { CreationToolbar } from './components/toolbar/creation-toolbar';
@@ -62,6 +63,7 @@ export type DrawnixProps = {
   onNewCanvas?: () => void;
   onSave?: () => void;
   onOpenCanvas?: () => void;
+  onRename?: () => void;
 } & React.HTMLAttributes<HTMLDivElement>;
 
 export const Drawnix: React.FC<DrawnixProps> = ({
@@ -79,6 +81,7 @@ export const Drawnix: React.FC<DrawnixProps> = ({
   onNewCanvas,
   onSave,
   onOpenCanvas,
+  onRename,
 }) => {
   const options: PlaitBoardOptions = {
     readonly: false,
@@ -159,13 +162,14 @@ export const Drawnix: React.FC<DrawnixProps> = ({
     withFreehand,
     buildPencilPlugin(updateAppState),
     buildTextLinkPlugin(updateAppState),
+    withRootDragToChild,
   ];
 
   const containerRef = useRef<HTMLDivElement>(null);
 
   return (
     <I18nProvider>
-      <DrawnixContext.Provider value={{ appState, setAppState, onSignOut, onNewCanvas, onSave, onOpenCanvas }}>
+      <DrawnixContext.Provider value={{ appState, setAppState, onSignOut, onNewCanvas, onSave, onOpenCanvas, onRename }}>
         <div
           className={classNames('drawnix', {
             'drawnix--mobile': appState.isMobile,

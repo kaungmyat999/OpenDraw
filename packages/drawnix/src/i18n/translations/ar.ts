@@ -95,6 +95,7 @@ const arTranslations: Translations = {
     "menu.newCanvas": "لوحة جديدة",
     "menu.save": "حفظ",
     "menu.openCanvas": "فتح لوحة",
+    "menu.rename": "إعادة تسمية",
 
     // Dialog translations
     "dialog.mermaid.title": "من Mermaid إلى Drawnix",
@@ -184,6 +185,8 @@ const arTranslations: Translations = {
     // Mind map elements text
     "mind.centralText": "الموضوع المركزي",
     "mind.abstractNodeText": "ملخص",
+    "mind.detach": "فصل",
+    "mind.deleteNodeOnly": "حذف العقدة فقط",
 
     'tutorial.title': 'Drawnix',
     'tutorial.description': 'سبورة شاملة تتضمن الخرائط الذهنية والمخططات الانسيابية والرسم الحر وغير ذلك',

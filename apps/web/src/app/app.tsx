@@ -9,6 +9,7 @@ import {
   countDrawings,
   createDrawing,
   updateContent,
+  renameDrawing,
 } from '../lib/drawings';
 import { AuthModal } from './auth-modal';
 import { CanvasPicker, CanvasRecord } from './canvas-picker';
@@ -54,7 +55,10 @@ export function App() {
   const [isSignedIn, setIsSignedIn] = useState<boolean | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [currentDrawingId, setCurrentDrawingId] = useState<string | null>(null);
+  const [currentDrawingName, setCurrentDrawingName] = useState<string>('');
   const [showPicker, setShowPicker] = useState(false);
+  const [showRename, setShowRename] = useState(false);
+  const [renameInput, setRenameInput] = useState('');
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('saved');
   // Ref keeps the latest ID available inside debounced callbacks without stale closure
   const currentDrawingIdRef = useRef<string | null>(null);
@@ -64,6 +68,9 @@ export function App() {
   // Hash of the content currently persisted on the server; used to skip
   // redundant server writes when nothing meaningful changed.
   const lastSyncedHashRef = useRef<string | null>(null);
+  // Hash of the content last written to localforage; used to avoid
+  // redundant local writes on every onChange (panning, selection, etc.).
+  const lastLocalHashRef = useRef<string | null>(null);
 
   const setDrawingId = (id: string | null) => {
     setCurrentDrawingId(id);
@@ -84,6 +91,7 @@ export function App() {
 
     if (data?.content) {
       setDrawingId(data.id);
+      setCurrentDrawingName(data.name);
       const cloudValue = data.content as AppValue;
       setValueSync(cloudValue);
       markSaved(cloudValue);
@@ -100,6 +108,7 @@ export function App() {
     const { id } = await createDrawing(uid, name, { children: [] });
 
     setDrawingId(id);
+    setCurrentDrawingName(name);
     setValueSync({ children: [] });
     markSaved({ children: [] });
     setTutorial(true);
@@ -108,7 +117,9 @@ export function App() {
   // Marks the canvas as persisted (no pending edits), e.g. right after load.
   const markSaved = (content?: AppValue) => {
     dirtyRef.current = false;
-    lastSyncedHashRef.current = hashContent(content ?? valueRef.current);
+    const hash = hashContent(content ?? valueRef.current);
+    lastSyncedHashRef.current = hash;
+    lastLocalHashRef.current = hash;
     setSaveStatus('saved');
   };
 
@@ -146,12 +157,20 @@ export function App() {
     }
   };
 
-  // Local-first: persist the edit locally right away and mark it pending. The
-  // actual server upload is batched by the periodic interval below.
-  const queueLocalChange = (newValue: AppValue) => {
-    saveLocal(newValue);
-    dirtyRef.current = true;
-    setSaveStatus('unsaved');
+  // Called on every onChange: saves locally whenever the content hash changes,
+  // and marks dirty (pending server upload) whenever content differs from the
+  // last server-synced hash. Viewport/selection changes are filtered by the
+  // caller using hashContent, so this only fires on real node edits.
+  const handleContentChange = (newValue: AppValue) => {
+    const hash = hashContent(newValue);
+    if (hash !== lastLocalHashRef.current) {
+      saveLocal(newValue);
+      lastLocalHashRef.current = hash;
+    }
+    if (hash !== lastSyncedHashRef.current) {
+      dirtyRef.current = true;
+      setSaveStatus('unsaved');
+    }
   };
 
   useEffect(() => {
@@ -219,6 +238,19 @@ export function App() {
 
   const handleOpenCanvas = () => setShowPicker(true);
 
+  const handleRename = () => {
+    setRenameInput(currentDrawingName);
+    setShowRename(true);
+  };
+
+  const handleRenameSubmit = async () => {
+    const trimmed = renameInput.trim();
+    if (!trimmed || !currentDrawingId) { setShowRename(false); return; }
+    await renameDrawing(currentDrawingId, trimmed);
+    setCurrentDrawingName(trimmed);
+    setShowRename(false);
+  };
+
   const handleSelectCanvas = async (canvas: CanvasRecord) => {
     if (!userId || canvas.id === currentDrawingIdRef.current) {
       setShowPicker(false);
@@ -252,6 +284,24 @@ export function App() {
           onClose={() => setShowPicker(false)}
         />
       )}
+      {showRename && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+          <div style={{ background: 'var(--drawnix-primary-background, #fff)', borderRadius: 8, padding: '24px 28px', minWidth: 320, display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ fontWeight: 600, fontSize: 15 }}>Rename canvas</div>
+            <input
+              autoFocus
+              value={renameInput}
+              onChange={(e) => setRenameInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleRenameSubmit(); if (e.key === 'Escape') setShowRename(false); }}
+              style={{ padding: '8px 10px', borderRadius: 6, border: '1px solid #ccc', fontSize: 14, outline: 'none' }}
+            />
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button onClick={() => setShowRename(false)} style={{ padding: '6px 14px', borderRadius: 6, border: '1px solid #ccc', cursor: 'pointer', background: 'transparent' }}>Cancel</button>
+              <button onClick={handleRenameSubmit} style={{ padding: '6px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: '#1677ff', color: '#fff' }}>Save</button>
+            </div>
+          </div>
+        </div>
+      )}
       <Drawnix
         value={value.children}
         viewport={value.viewport}
@@ -259,13 +309,7 @@ export function App() {
         onChange={(v) => {
           const newValue = v as AppValue;
           setValueSync(newValue);
-          // Only react when the diagram itself changed. Selection, hover,
-          // panning and zooming all fire onChange but leave the content hash
-          // untouched. On a real edit, save locally now; the server upload is
-          // batched by the 30s interval.
-          if (hashContent(newValue) !== lastSyncedHashRef.current) {
-            queueLocalChange(newValue);
-          }
+          handleContentChange(newValue);
           if (newValue.children && newValue.children.length > 0) {
             setTutorial(false);
           }
@@ -278,6 +322,7 @@ export function App() {
         onNewCanvas={handleNewCanvas}
         onSave={handleSave}
         onOpenCanvas={handleOpenCanvas}
+        onRename={handleRename}
       />
     </>
   );

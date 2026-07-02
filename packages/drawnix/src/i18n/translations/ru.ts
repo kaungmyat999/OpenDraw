@@ -95,6 +95,7 @@ const ruTranslations: Translations = {
   'menu.newCanvas': 'Новый холст',
   'menu.save': 'Сохранить',
   'menu.openCanvas': 'Открыть холст',
+  'menu.rename': 'Переименовать',
 
   // Dialog translations
   'dialog.mermaid.title': 'Mermaid в Drawnix',
@@ -189,6 +190,8 @@ const ruTranslations: Translations = {
   // Mind map elements text
   'mind.centralText': 'Центральная тема',
   'mind.abstractNodeText': 'Резюме',
+  'mind.detach': 'Отсоединить',
+  'mind.deleteNodeOnly': 'Удалить только узел',
 
   'tutorial.title': 'Drawnix',
   'tutorial.description':

@@ -23,12 +23,12 @@ import {
   CleanBoard,
   NewCanvas,
   OpenCanvas,
+  Rename,
   SaveAsImage,
   SaveToCloud,
   SaveToFile,
   SignOut,
 } from './app-menu-items';
-import { LanguageSwitcherMenu } from './language-switcher-menu';
 import Menu from '../../menu/menu';
 import MenuSeparator from '../../menu/menu-separator';
 import { useI18n } from '../../../i18n';
@@ -77,12 +77,12 @@ export const AppToolbar = () => {
             >
               <NewCanvas></NewCanvas>
               <OpenCanvas></OpenCanvas>
+              <Rename />
               <SaveToFile></SaveToFile>
               <SaveToCloud></SaveToCloud>
               <SaveAsImage></SaveAsImage>
               <CleanBoard></CleanBoard>
               <MenuSeparator />
-              <LanguageSwitcherMenu />
               <SignOut />
             </Menu>
           </PopoverContent>

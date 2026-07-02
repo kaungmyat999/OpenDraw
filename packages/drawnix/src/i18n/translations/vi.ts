@@ -95,6 +95,7 @@ const viTranslations: Translations = {
     'menu.newCanvas': 'Tạo bảng mới',
     'menu.save': 'Lưu',
     'menu.openCanvas': 'Mở bảng',
+    'menu.rename': 'Đổi tên',
 
     // Dialog translations
     'dialog.mermaid.title': 'Mermaid sang Drawnix',
@@ -187,6 +188,8 @@ const viTranslations: Translations = {
     // Mind map elements text
     'mind.centralText': 'Chủ đề trung tâm',
     'mind.abstractNodeText': 'Tóm tắt',
+    'mind.detach': 'Tách rời',
+    'mind.deleteNodeOnly': 'Chỉ xóa nút',
 
     'tutorial.title': 'DPIT Draw MindMap',
     'tutorial.description': 'Bảng trắng tất cả trong một, bao gồm sơ đồ tư duy, lưu đồ, vẽ tự do và hơn thế nữa',

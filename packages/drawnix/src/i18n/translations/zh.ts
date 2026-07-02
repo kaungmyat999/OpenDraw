@@ -94,6 +94,7 @@ const zhTranslations: Translations = {
   'menu.newCanvas': '新建画布',
   'menu.save': '保存',
   'menu.openCanvas': '打开画布',
+  'menu.rename': '重命名',
 
   // Dialog translations
   'dialog.mermaid.title': 'Mermaid 转 Drawnix',
@@ -161,6 +162,8 @@ const zhTranslations: Translations = {
   // Mind map elements text
   'mind.centralText': '中心主题',
   'mind.abstractNodeText': '摘要',
+  'mind.detach': '分离',
+  'mind.deleteNodeOnly': '仅删除节点',
 
   //markdown example
   'markdown.example': `# 我开始了

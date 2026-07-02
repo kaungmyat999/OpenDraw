@@ -492,6 +492,20 @@ export const DuplicateIcon = createIcon(
   </svg>
 );
 
+export const DetachIcon = createIcon(
+  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor">
+    <path strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"
+      d="M7.5 10H4.167M10 4.167V2.5M10 17.5v-1.667M4.167 10H2.5M15 7.5l2.5-2.5M15 12.5l2.5 2.5M10 7.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5Z" />
+  </svg>
+);
+
+export const RenameIcon = createIcon(
+  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor">
+    <path strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"
+      d="M13.833 3.167a1.768 1.768 0 0 1 2.5 2.5L6.25 15.75l-3.333.833.833-3.333L13.833 3.167Z" />
+  </svg>
+);
+
 export const FeltTipPenIcon = createIcon(
   <svg
     viewBox="0 0 1024 1024"

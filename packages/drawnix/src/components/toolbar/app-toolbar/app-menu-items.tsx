@@ -3,6 +3,7 @@ import {
   ExportImageIcon,
   NewCanvasIcon,
   OpenFileIcon,
+  RenameIcon,
   SaveFileIcon,
   SignOutIcon,
   TrashIcon,
@@ -211,3 +212,21 @@ export const SignOut = () => {
   );
 };
 SignOut.displayName = 'SignOut';
+
+export const Rename = () => {
+  const { t } = useI18n();
+  const { onRename } = useDrawnix();
+
+  if (!onRename) return null;
+
+  return (
+    <MenuItem
+      icon={RenameIcon}
+      onSelect={onRename}
+      aria-label={t('menu.rename')}
+    >
+      {t('menu.rename')}
+    </MenuItem>
+  );
+};
+Rename.displayName = 'Rename';

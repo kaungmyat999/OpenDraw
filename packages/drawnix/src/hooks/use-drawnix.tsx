@@ -66,6 +66,7 @@ export const DrawnixContext = createContext<{
   onNewCanvas?: () => void;
   onSave?: () => void;
   onOpenCanvas?: () => void;
+  onRename?: () => void;
 } | null>(null);
 
 export const useDrawnix = (): {
@@ -75,6 +76,7 @@ export const useDrawnix = (): {
   onNewCanvas?: () => void;
   onSave?: () => void;
   onOpenCanvas?: () => void;
+  onRename?: () => void;
 } => {
   const context = useContext(DrawnixContext);
 

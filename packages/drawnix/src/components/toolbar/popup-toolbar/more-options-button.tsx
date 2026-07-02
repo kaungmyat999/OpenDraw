@@ -2,8 +2,16 @@ import React from 'react';
 import { ToolButton } from '../../tool-button';
 import classNames from 'classnames';
 import { useI18n } from '../../../i18n';
-import { deleteFragment, duplicateElements, PlaitBoard } from '@plait/core';
-import { DuplicateIcon, MoreOptionsIcon, TrashIcon } from '../../icons';
+import {
+  CoreTransforms,
+  PlaitBoard,
+  Transforms,
+  deleteFragment,
+  duplicateElements,
+  getRectangleByElements,
+  getSelectedElements,
+} from '@plait/core';
+import { DetachIcon, DuplicateIcon, MoreOptionsIcon, TrashIcon } from '../../icons';
 import { Popover, PopoverContent, PopoverTrigger } from '../../popover/popover';
 import Menu from '../../menu/menu';
 import MenuItem from '../../menu/menu-item';
@@ -14,6 +22,54 @@ import {
   copySelectionAsPng,
   copySelectionAsSvg,
 } from '../../../utils/image';
+import {
+  MindElement,
+  MindTransforms,
+  PlaitMind,
+  PlaitMindBoard,
+  adjustNodeToRoot,
+  deleteElementHandleAbstract,
+  deleteElementsHandleRightNodeCount,
+} from '@plait/mind';
+import { AbstractNode } from '@plait/layouts';
+
+const detachMindChildren = (board: PlaitBoard) => {
+  const selected = getSelectedElements(board).filter(
+    (e) =>
+      MindElement.isMindElement(board, e) &&
+      !PlaitMind.isMind(e) &&
+      !AbstractNode.isAbstract(e as Parameters<typeof AbstractNode.isAbstract>[0])
+  );
+
+  for (const element of selected) {
+    const rect = getRectangleByElements(board, [element], false);
+    const position: [number, number] = [rect.x, rect.y];
+
+    const refs = deleteElementsHandleRightNodeCount(board, [element]);
+    const abstractRefs = deleteElementHandleAbstract(board, [element]);
+    MindTransforms.setAbstractsByRefs(board, abstractRefs);
+    MindTransforms.setRightNodeCountByRefs(board, refs);
+
+    CoreTransforms.removeElements(board, [element]);
+
+    const rootNode = adjustNodeToRoot(
+      board as unknown as PlaitMindBoard,
+      element as Parameters<typeof adjustNodeToRoot>[1]
+    );
+    (rootNode as { points: [number, number][] }).points = [position];
+
+    Transforms.insertNode(board, rootNode, [board.children.length]);
+    Transforms.addSelectionWithTemporaryElements(board, [rootNode]);
+  }
+};
+
+const canDetach = (board: PlaitBoard) =>
+  getSelectedElements(board).some(
+    (e) =>
+      MindElement.isMindElement(board, e) &&
+      !PlaitMind.isMind(e) &&
+      !AbstractNode.isAbstract(e as Parameters<typeof AbstractNode.isAbstract>[0])
+  );
 
 export type MoreOptionsButtonProps = {
   board: PlaitBoard;
@@ -28,6 +84,7 @@ export const MoreOptionsButton: React.FC<MoreOptionsButtonProps> = ({
   const canCopySvg = canCopySelectionAs('svg');
   const canCopyPng = canCopySelectionAs('png');
   const canCopyAny = canCopySvg || canCopyPng;
+  const showDetach = canDetach(board);
 
   return (
     <Popover
@@ -59,6 +116,18 @@ export const MoreOptionsButton: React.FC<MoreOptionsButtonProps> = ({
             setMenuOpen(false);
           }}
         >
+          {showDetach && (
+            <MenuItem
+              onSelect={() => {
+                detachMindChildren(board);
+                setMenuOpen(false);
+              }}
+              icon={DetachIcon}
+              aria-label={t('mind.detach')}
+            >
+              {t('mind.detach')}
+            </MenuItem>
+          )}
           <MenuItem
             onSelect={() => {
               duplicateElements(board);

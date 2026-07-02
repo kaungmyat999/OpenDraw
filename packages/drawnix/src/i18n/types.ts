@@ -98,6 +98,7 @@ export interface Translations {
   'menu.newCanvas': string;
   'menu.save': string;
   'menu.openCanvas': string;
+  'menu.rename': string;
 
   // Dialog translations
   'dialog.mermaid.title': string;
@@ -168,6 +169,8 @@ export interface Translations {
   // Mind map elements text
   'mind.centralText': string;
   'mind.abstractNodeText': string;
+  'mind.detach': string;
+  'mind.deleteNodeOnly': string;
 
   'tutorial.title': string;
   'tutorial.description': string;

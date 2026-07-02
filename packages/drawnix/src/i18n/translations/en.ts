@@ -93,6 +93,7 @@ const enTranslations: Translations = {
   'menu.newCanvas': 'New Canvas',
   'menu.save': 'Save',
   'menu.openCanvas': 'Open Canvas',
+  'menu.rename': 'Rename',
 
   // Dialog translations
   'dialog.mermaid.title': 'Mermaid to Drawnix',
@@ -185,6 +186,8 @@ const enTranslations: Translations = {
   // Mind map elements text
   'mind.centralText': 'Central Topic',
   'mind.abstractNodeText': 'Summary',
+  'mind.detach': 'Detach',
+  'mind.deleteNodeOnly': 'Delete Node Only',
 
   'tutorial.title': 'Drawnix',
   'tutorial.description':
