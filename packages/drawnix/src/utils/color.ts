@@ -78,7 +78,7 @@ export function isFullyOpaque(opacity: number) {
 }
 
 export function isNoColor(value: string) {
-  return value === NO_COLOR;
+  return value === NO_COLOR || value === 'none';
 }
 
 export function isDefaultStroke(color?: string) {

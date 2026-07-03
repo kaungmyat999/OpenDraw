@@ -17,6 +17,7 @@ import { withDraw } from '@plait/draw';
 import { MindThemeColors, withMind } from '@plait/mind';
 import MobileDetect from 'mobile-detect';
 import { withMindExtend } from './plugins/with-mind-extend';
+import { withTextFont } from './plugins/with-text-font';
 import { withMindDeletePromote } from './plugins/with-mind-delete-promote';
 import { withRootDragToChild } from './plugins/with-root-drag-to-child';
 import { withStandardRoot } from './plugins/with-standard-root';
@@ -155,6 +156,7 @@ export const Drawnix: React.FC<DrawnixProps> = ({
     withGroup,
     withMind,
     withMindExtend,
+    withTextFont,
     withStandardRoot,
     withMindDeletePromote,
     withCommonPlugin,

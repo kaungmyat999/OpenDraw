@@ -7,6 +7,7 @@ import {
   Transforms,
 } from '@plait/core';
 import { getMemorizeKey } from '@plait/draw';
+import { getBranchColorByMindElement, MindElement, PlaitMind } from '@plait/mind';
 import {
   applyOpacityToHex,
   hexAlphaToOpacity,
@@ -79,6 +80,9 @@ export const setStrokeColorOpacity = (
     getMemorizeKey,
     callback: (element: PlaitElement, path: Path) => {
       const currentStrokeColor = getCurrentStrokeColor(board, element);
+      if (!isValidColor(currentStrokeColor)) {
+        return;
+      }
       const currentStrokeColorValue = removeHexAlpha(currentStrokeColor);
       const newStrokeColor = isFullyOpaque(fillOpacity)
         ? currentStrokeColorValue
@@ -92,23 +96,43 @@ export const setStrokeColor = (board: PlaitBoard, newColor: string) => {
   PropertyTransforms.setStrokeColor(board, null, {
     getMemorizeKey,
     callback: (element: PlaitElement, path: Path) => {
-      const currentStrokeColor = getCurrentStrokeColor(board, element);
-      const currentOpacity = hexAlphaToOpacity(currentStrokeColor);
       if (isNoColor(newColor)) {
-        Transforms.setNode(board, { strokeColor: null }, path);
-      } else {
-        if (
-          isNullOrUndefined(currentOpacity) ||
-          isFullyOpaque(currentOpacity)
-        ) {
-          Transforms.setNode(board, { strokeColor: newColor }, path);
+        if (MindElement.isMindElement(board, element)) {
+          if (PlaitMind.isMind(element)) {
+            // root topic has no incoming edge, so it can be cleared directly
+            Transforms.setNode(board, { strokeColor: 'none' }, path);
+          } else {
+            // 'none' (not null) so the border is actually hidden instead of
+            // falling back to a default color; the edge keeps its resolved
+            // color by pinning it explicitly, since edges otherwise mirror
+            // the node's strokeColor
+            const currentBranchColor = getBranchColorByMindElement(
+              board,
+              element
+            );
+            Transforms.setNode(
+              board,
+              { strokeColor: 'none', branchColor: currentBranchColor },
+              path
+            );
+          }
         } else {
-          Transforms.setNode(
-            board,
-            { strokeColor: applyOpacityToHex(newColor, currentOpacity) },
-            path
-          );
+          Transforms.setNode(board, { strokeColor: null }, path);
         }
+        return;
+      }
+      const currentStrokeColor = getCurrentStrokeColor(board, element);
+      const currentOpacity = isValidColor(currentStrokeColor)
+        ? hexAlphaToOpacity(currentStrokeColor)
+        : 100;
+      if (isNullOrUndefined(currentOpacity) || isFullyOpaque(currentOpacity)) {
+        Transforms.setNode(board, { strokeColor: newColor }, path);
+      } else {
+        Transforms.setNode(
+          board,
+          { strokeColor: applyOpacityToHex(newColor, currentOpacity) },
+          path
+        );
       }
     },
   });

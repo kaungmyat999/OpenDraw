@@ -45,10 +45,15 @@ export const ColorPicker = React.forwardRef((props: ColorPickerProps, ref) => {
     hideOpacitySlider = false,
   } = props;
   const [selectedColor, setSelectedColor] = useState(
-    (currentColor && removeHexAlpha(currentColor)) ||
-      ROWS_CLASSIC_COLORS[0][0].value
+    currentColor && isNoColor(currentColor)
+      ? NO_COLOR
+      : (currentColor && removeHexAlpha(currentColor)) ||
+          ROWS_CLASSIC_COLORS[0][0].value
   );
   const [opacity, setOpacity] = useState(() => {
+    if (currentColor && isNoColor(currentColor)) {
+      return 100;
+    }
     const _opacity = currentColor && hexAlphaToOpacity(currentColor);
     return (!isNullOrUndefined(_opacity) ? _opacity : 100) as number;
   });
