@@ -59,6 +59,8 @@ export function App() {
   const [showPicker, setShowPicker] = useState(false);
   const [showRename, setShowRename] = useState(false);
   const [renameInput, setRenameInput] = useState('');
+  const [showNewCanvasPrompt, setShowNewCanvasPrompt] = useState(false);
+  const [newCanvasNameInput, setNewCanvasNameInput] = useState('');
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('saved');
   // Ref keeps the latest ID available inside debounced callbacks without stale closure
   const currentDrawingIdRef = useRef<string | null>(null);
@@ -102,9 +104,12 @@ export function App() {
     }
   };
 
-  const createNewCanvas = async (uid: string, isFirst = false) => {
-    const count = await countDrawings(uid);
-    const name = `Canvas ${count + 1}`;
+  const createNewCanvas = async (uid: string, isFirst = false, customName?: string) => {
+    let name = customName?.trim();
+    if (!name) {
+      const count = await countDrawings(uid);
+      name = `Canvas ${count + 1}`;
+    }
     const { id } = await createDrawing(uid, name, { children: [] });
 
     setDrawingId(id);
@@ -227,9 +232,18 @@ export function App() {
 
   const handleNewCanvas = async () => {
     if (!userId) return;
+    const count = await countDrawings(userId);
+    setNewCanvasNameInput(`Canvas ${count + 1}`);
+    setShowNewCanvasPrompt(true);
+  };
+
+  const handleNewCanvasSubmit = async () => {
+    if (!userId) { setShowNewCanvasPrompt(false); return; }
+    const name = newCanvasNameInput.trim();
+    setShowNewCanvasPrompt(false);
     // Flush pending edits to the server before switching away.
     await saveCurrentCanvas();
-    await createNewCanvas(userId);
+    await createNewCanvas(userId, false, name);
   };
 
   const handleSave = async () => {
@@ -298,6 +312,25 @@ export function App() {
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
               <button onClick={() => setShowRename(false)} style={{ padding: '6px 14px', borderRadius: 6, border: '1px solid #ccc', cursor: 'pointer', background: 'transparent' }}>Cancel</button>
               <button onClick={handleRenameSubmit} style={{ padding: '6px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: '#1677ff', color: '#fff' }}>Save</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showNewCanvasPrompt && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+          <div style={{ background: 'var(--drawnix-primary-background, #fff)', borderRadius: 8, padding: '24px 28px', minWidth: 320, display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ fontWeight: 600, fontSize: 15 }}>New canvas</div>
+            <input
+              autoFocus
+              value={newCanvasNameInput}
+              onChange={(e) => setNewCanvasNameInput(e.target.value)}
+              onFocus={(e) => e.target.select()}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleNewCanvasSubmit(); if (e.key === 'Escape') setShowNewCanvasPrompt(false); }}
+              style={{ padding: '8px 10px', borderRadius: 6, border: '1px solid #ccc', fontSize: 14, outline: 'none' }}
+            />
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button onClick={() => setShowNewCanvasPrompt(false)} style={{ padding: '6px 14px', borderRadius: 6, border: '1px solid #ccc', cursor: 'pointer', background: 'transparent' }}>Cancel</button>
+              <button onClick={handleNewCanvasSubmit} style={{ padding: '6px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: '#1677ff', color: '#fff' }}>Create</button>
             </div>
           </div>
         </div>

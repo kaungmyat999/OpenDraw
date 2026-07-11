@@ -499,6 +499,13 @@ export const DetachIcon = createIcon(
   </svg>
 );
 
+export const MergeIcon = createIcon(
+  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor">
+    <path strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"
+      d="M2.5 4.167h3.333M2.5 10h3.333M2.5 15.833h3.333M5.833 4.167c3.334 0 3.334 5.416 6.667 5.416M5.833 15.833c3.334 0 3.334-5.416 6.667-5.416M5.833 10h6.667M15.417 8.333a1.667 1.667 0 1 1 0 3.334 1.667 1.667 0 0 1 0-3.334Z" />
+  </svg>
+);
+
 export const RenameIcon = createIcon(
   <svg viewBox="0 0 20 20" fill="none" stroke="currentColor">
     <path strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"

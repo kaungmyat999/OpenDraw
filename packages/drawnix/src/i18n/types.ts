@@ -170,6 +170,7 @@ export interface Translations {
   'mind.centralText': string;
   'mind.abstractNodeText': string;
   'mind.detach': string;
+  'mind.merge': string;
   'mind.deleteNodeOnly': string;
 
   'tutorial.title': string;

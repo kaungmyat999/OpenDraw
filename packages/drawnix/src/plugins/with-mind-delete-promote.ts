@@ -14,6 +14,7 @@ import {
   adjustNodeToRoot,
   copyNewNode,
   getRectangleByNode,
+  insertElementHandleAbstract,
   insertElementHandleRightNodeCount,
   isInRightBranchOfStandardLayout,
 } from '@plait/mind';
@@ -131,6 +132,19 @@ export const withMindDeletePromote = (board: PlaitBoard) => {
     }
 
     CoreTransforms.removeElements(board, [element]);
+
+    // getDeletedFragment already shifted abstract (summary/merge) ranges for
+    // the removed node; extend them again for the promoted children being
+    // inserted in its place so merged groups keep covering the right siblings.
+    const abstractRefs = insertElementHandleAbstract(
+      board,
+      [...parentPath, index],
+      copies.length
+    );
+    if (abstractRefs.size) {
+      MindTransforms.setAbstractsByRefs(board, abstractRefs);
+    }
+
     copies.forEach((copy, i) => {
       Transforms.insertNode(board, copy, [...parentPath, index + i]);
     });

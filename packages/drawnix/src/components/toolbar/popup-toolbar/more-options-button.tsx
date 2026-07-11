@@ -11,7 +11,7 @@ import {
   getRectangleByElements,
   getSelectedElements,
 } from '@plait/core';
-import { DetachIcon, DuplicateIcon, MoreOptionsIcon, TrashIcon } from '../../icons';
+import { DetachIcon, DuplicateIcon, MergeIcon, MoreOptionsIcon, TrashIcon } from '../../icons';
 import { Popover, PopoverContent, PopoverTrigger } from '../../popover/popover';
 import Menu from '../../menu/menu';
 import MenuItem from '../../menu/menu-item';
@@ -28,6 +28,7 @@ import {
   PlaitMind,
   PlaitMindBoard,
   adjustNodeToRoot,
+  canSetAbstract,
   deleteElementHandleAbstract,
   deleteElementsHandleRightNodeCount,
 } from '@plait/mind';
@@ -63,6 +64,26 @@ const detachMindChildren = (board: PlaitBoard) => {
   }
 };
 
+/**
+ * Merge (a, b, c) -> d: wraps the selected sibling nodes with a summary
+ * bracket and creates a single node they all converge into. Backed by
+ * Plait's abstract/summary node, so the merged node follows layout changes
+ * and its range can be resized with the built-in handles.
+ */
+const getMergeableElements = (board: PlaitBoard) =>
+  getSelectedElements(board).filter(
+    (e) => MindElement.isMindElement(board, e) && canSetAbstract(e)
+  ) as MindElement[];
+
+const canMerge = (board: PlaitBoard) => {
+  const selected = getSelectedElements(board);
+  return selected.length >= 2 && getMergeableElements(board).length === selected.length;
+};
+
+const mergeSelectedNodes = (board: PlaitBoard) => {
+  MindTransforms.insertAbstract(board, getMergeableElements(board));
+};
+
 const canDetach = (board: PlaitBoard) =>
   getSelectedElements(board).some(
     (e) =>
@@ -85,6 +106,7 @@ export const MoreOptionsButton: React.FC<MoreOptionsButtonProps> = ({
   const canCopyPng = canCopySelectionAs('png');
   const canCopyAny = canCopySvg || canCopyPng;
   const showDetach = canDetach(board);
+  const showMerge = canMerge(board);
 
   return (
     <Popover
@@ -116,6 +138,18 @@ export const MoreOptionsButton: React.FC<MoreOptionsButtonProps> = ({
             setMenuOpen(false);
           }}
         >
+          {showMerge && (
+            <MenuItem
+              onSelect={() => {
+                mergeSelectedNodes(board);
+                setMenuOpen(false);
+              }}
+              icon={MergeIcon}
+              aria-label={t('mind.merge')}
+            >
+              {t('mind.merge')}
+            </MenuItem>
+          )}
           {showDetach && (
             <MenuItem
               onSelect={() => {

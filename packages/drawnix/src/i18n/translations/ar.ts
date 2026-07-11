@@ -186,6 +186,7 @@ const arTranslations: Translations = {
     "mind.centralText": "الموضوع المركزي",
     "mind.abstractNodeText": "ملخص",
     "mind.detach": "فصل",
+    "mind.merge": "دمج في عقدة",
     "mind.deleteNodeOnly": "حذف العقدة فقط",
 
     'tutorial.title': 'Drawnix',

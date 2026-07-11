@@ -191,6 +191,7 @@ const ruTranslations: Translations = {
   'mind.centralText': 'Центральная тема',
   'mind.abstractNodeText': 'Резюме',
   'mind.detach': 'Отсоединить',
+  'mind.merge': 'Объединить в узел',
   'mind.deleteNodeOnly': 'Удалить только узел',
 
   'tutorial.title': 'Drawnix',

@@ -189,6 +189,7 @@ const viTranslations: Translations = {
     'mind.centralText': 'Chủ đề trung tâm',
     'mind.abstractNodeText': 'Tóm tắt',
     'mind.detach': 'Tách rời',
+    'mind.merge': 'Gộp thành nút',
     'mind.deleteNodeOnly': 'Chỉ xóa nút',
 
     'tutorial.title': 'DPIT Draw MindMap',

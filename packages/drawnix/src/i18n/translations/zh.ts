@@ -163,6 +163,7 @@ const zhTranslations: Translations = {
   'mind.centralText': '中心主题',
   'mind.abstractNodeText': '摘要',
   'mind.detach': '分离',
+  'mind.merge': '合并为节点',
   'mind.deleteNodeOnly': '仅删除节点',
 
   //markdown example

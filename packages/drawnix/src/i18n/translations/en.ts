@@ -187,6 +187,7 @@ const enTranslations: Translations = {
   'mind.centralText': 'Central Topic',
   'mind.abstractNodeText': 'Summary',
   'mind.detach': 'Detach',
+  'mind.merge': 'Merge into Node',
   'mind.deleteNodeOnly': 'Delete Node Only',
 
   'tutorial.title': 'Drawnix',
