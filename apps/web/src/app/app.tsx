@@ -24,6 +24,10 @@ type AppValue = {
 const CURRENT_DRAWING_ID_KEY = 'current_drawing_id';
 // Local per-canvas content backup, keyed by drawing id.
 const LOCAL_CONTENT_PREFIX = 'canvas_content_';
+
+// Local backup written on every edit; savedAt lets loadCanvas detect that the
+// backup is newer than the server copy (edits the batched upload never sent).
+type LocalBackup = { content: AppValue; savedAt: string };
 // Batched server upload cadence: local saves are immediate, the server is
 // updated at most once per this interval.
 const AUTO_SAVE_INTERVAL_MS = 30000;
@@ -73,6 +77,10 @@ export function App() {
   // Hash of the content last written to localforage; used to avoid
   // redundant local writes on every onChange (panning, selection, etc.).
   const lastLocalHashRef = useRef<string | null>(null);
+  // User whose canvas is currently loaded. Supabase re-emits SIGNED_IN on
+  // token refresh / tab refocus; without this guard that reload would pull
+  // the older server copy over unsaved local edits.
+  const loadedUserIdRef = useRef<string | null>(null);
 
   const setDrawingId = (id: string | null) => {
     setCurrentDrawingId(id);
@@ -95,9 +103,30 @@ export function App() {
       setDrawingId(data.id);
       setCurrentDrawingName(data.name);
       const cloudValue = data.content as AppValue;
-      setValueSync(cloudValue);
-      markSaved(cloudValue);
-      setTutorial(!cloudValue.children?.length);
+
+      // If the local backup holds edits made after the server's copy (the tab
+      // closed or reloaded before the batched upload fired), restore it and
+      // leave it marked dirty so the autosave pushes it to the server.
+      const backup = await localforage.getItem<LocalBackup>(
+        LOCAL_CONTENT_PREFIX + data.id
+      );
+      let value = cloudValue;
+      if (
+        backup?.savedAt &&
+        backup.savedAt > data.updated_at &&
+        hashContent(backup.content) !== hashContent(cloudValue)
+      ) {
+        value = backup.content;
+        setValueSync(value);
+        lastSyncedHashRef.current = hashContent(cloudValue);
+        lastLocalHashRef.current = hashContent(backup.content);
+        dirtyRef.current = true;
+        setSaveStatus('unsaved');
+      } else {
+        setValueSync(value);
+        markSaved(cloudValue);
+      }
+      setTutorial(!value.children?.length);
     } else {
       // No canvases yet — create the first one
       await createNewCanvas(uid, true);
@@ -133,7 +162,11 @@ export function App() {
   const saveLocal = (content: AppValue) => {
     const id = currentDrawingIdRef.current;
     if (!id) return;
-    localforage.setItem(LOCAL_CONTENT_PREFIX + id, content).catch((error) => {
+    const backup: LocalBackup = {
+      content,
+      savedAt: new Date().toISOString(),
+    };
+    localforage.setItem(LOCAL_CONTENT_PREFIX + id, backup).catch((error) => {
       console.error('Failed to save canvas locally', error);
     });
   };
@@ -184,6 +217,7 @@ export function App() {
       if (user) {
         setIsSignedIn(true);
         setUserId(user.id);
+        loadedUserIdRef.current = user.id;
         // Try to resume the last open canvas
         const lastId = await localforage.getItem<string>(CURRENT_DRAWING_ID_KEY);
         await loadCanvas(user.id, lastId ?? undefined);
@@ -197,6 +231,11 @@ export function App() {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (event === 'SIGNED_IN' && session?.user) {
+          // Ignore repeat SIGNED_IN events for the already-loaded user
+          // (token refresh, tab refocus) — reloading here would replace
+          // unsaved edits with the last-saved server copy.
+          if (loadedUserIdRef.current === session.user.id) return;
+          loadedUserIdRef.current = session.user.id;
           setIsSignedIn(true);
           setUserId(session.user.id);
           const lastId = await localforage.getItem<string>(CURRENT_DRAWING_ID_KEY);
@@ -205,6 +244,7 @@ export function App() {
         if (event === 'SIGNED_OUT') {
           setIsSignedIn(false);
           setUserId(null);
+          loadedUserIdRef.current = null;
           setDrawingId(null);
           setValueSync({ children: [] });
           setTutorial(false);
@@ -227,6 +267,27 @@ export function App() {
     return () => clearInterval(interval);
     // saveCurrentCanvas relies only on refs / stable setters, so an empty dep
     // array is safe here.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Best-effort flush when the tab is hidden or closing so pending edits
+  // reach the server without waiting for the 30s timer. If the request gets
+  // cut off, the timestamped local backup still restores them on next load.
+  useEffect(() => {
+    const flush = () => {
+      if (dirtyRef.current && currentDrawingIdRef.current) {
+        saveCurrentCanvas();
+      }
+    };
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') flush();
+    };
+    window.addEventListener('pagehide', flush);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => {
+      window.removeEventListener('pagehide', flush);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

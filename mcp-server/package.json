@@ -1,0 +1,10 @@
+{
+  "name": "@drawnix/mcp-server",
+  "version": "0.1.0",
+  "description": "MCP server that lets LLMs read OpenDraw canvases and create/edit diagram nodes",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "opendraw-mcp": "./index.js"
+  }
+}

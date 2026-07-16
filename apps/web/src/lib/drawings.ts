@@ -2,7 +2,12 @@ import { turso } from './turso';
 
 export type CanvasMeta = { id: string; name: string; updated_at: string };
 
-export type DrawingRow = { id: string; name: string; content: unknown };
+export type DrawingRow = {
+  id: string;
+  name: string;
+  content: unknown;
+  updated_at: string;
+};
 
 const nowIso = () => new Date().toISOString();
 
@@ -12,12 +17,10 @@ export async function getDrawing(
   id: string
 ): Promise<DrawingRow | null> {
   const rs = await turso.execute({
-    sql: 'select id, name, content from drawings where user_id = ? and id = ? limit 1',
+    sql: 'select id, name, content, updated_at from drawings where user_id = ? and id = ? limit 1',
     args: [userId, id],
   });
-  const row = rs.rows[0];
-  if (!row) return null;
-  return { id: row.id as string, name: row.name as string, content: JSON.parse(row.content as string) };
+  return rowToDrawing(rs.rows[0]);
 }
 
 // Most recently updated drawing for the user, or null if they have none.
@@ -25,12 +28,20 @@ export async function getLatestDrawing(
   userId: string
 ): Promise<DrawingRow | null> {
   const rs = await turso.execute({
-    sql: 'select id, name, content from drawings where user_id = ? order by updated_at desc limit 1',
+    sql: 'select id, name, content, updated_at from drawings where user_id = ? order by updated_at desc limit 1',
     args: [userId],
   });
-  const row = rs.rows[0];
+  return rowToDrawing(rs.rows[0]);
+}
+
+function rowToDrawing(row: Record<string, unknown> | undefined): DrawingRow | null {
   if (!row) return null;
-  return { id: row.id as string, name: row.name as string, content: JSON.parse(row.content as string) };
+  return {
+    id: row.id as string,
+    name: row.name as string,
+    content: JSON.parse(row.content as string),
+    updated_at: row.updated_at as string,
+  };
 }
 
 export async function countDrawings(userId: string): Promise<number> {
