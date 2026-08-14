@@ -1,6 +1,8 @@
 import { PlaitBoard, PlaitOperation } from '@plait/core';
 import { PlaitMind } from '@plait/mind';
 import { MindLayoutType } from '@plait/layouts';
+import { clearMindTopicSizeCache } from '../utils/mind-topic-size';
+import { adoptBranchColorOnMerge } from '../utils/mind-branch-color';
 
 type LooseNode = { layout?: string; rightNodeCount?: number; type?: string };
 
@@ -50,6 +52,12 @@ export const withStandardRoot = (board: PlaitBoard) => {
         if (node.layout === MindLayoutType.standard) {
           delete node.layout;
         }
+        // The topic drops from the root's 18px to a child's 14px, so the size
+        // measured while it was a root no longer describes it.
+        clearMindTopicSizeCache(board, operation.node);
+        // Drop the root-only colours so the merged subtree takes a branch
+        // colour from its new parent's palette instead of keeping its old one.
+        adoptBranchColorOnMerge(board, operation.node, operation.path);
       }
     }
     apply(operation);

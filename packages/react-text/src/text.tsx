@@ -22,6 +22,7 @@ import { CustomEditor, RenderElementPropsFor } from './custom-types';
 
 import './styles/index.scss';
 import { LinkComponent, withInlineLink } from './plugins/with-link';
+import { withMarkdown } from './plugins/with-markdown';
 
 export type TextComponentProps = TextProps;
 
@@ -38,8 +39,8 @@ export const Text: React.FC<TextComponentProps> = (
   const initialValue: Descendant[] = [text];
 
   const editor = useMemo(() => {
-    const editor = withInlineLink(
-      withText(withHistory(withReact(createEditor())))
+    const editor = withMarkdown(
+      withInlineLink(withText(withHistory(withReact(createEditor()))))
     );
     afterInit && afterInit(editor);
     return editor;
@@ -139,8 +140,23 @@ const ParagraphComponent = ({
   element,
 }: RenderElementPropsFor<ParagraphElement>) => {
   const style = { textAlign: element.align } as CSSProperties;
+  // Custom line height, stored on the paragraph as a unitless factor. The
+  // data attribute lets the stylesheet make font-size spans inherit it —
+  // their own line-height: 1.5 would otherwise floor the line box and make
+  // values below 1.5 have no effect.
+  const lineHeight = (element as ParagraphElement & { lineHeight?: number })
+    .lineHeight;
+  if (typeof lineHeight === 'number' && Number.isFinite(lineHeight)) {
+    style.lineHeight = lineHeight;
+  }
   return (
-    <div style={style} {...attributes}>
+    <div
+      style={style}
+      {...attributes}
+      {...(style.lineHeight !== undefined
+        ? { 'data-plait-line-height': String(style.lineHeight) }
+        : {})}
+    >
       {children}
     </div>
   );
@@ -157,6 +173,10 @@ const Leaf: React.FC<RenderLeafProps> = ({ children, leaf, attributes }) => {
 
   if ((leaf as CustomText).italic) {
     children = <em>{children}</em>;
+  }
+
+  if ((leaf as CustomText).strike) {
+    children = <s>{children}</s>;
   }
 
   if ((leaf as CustomText).underlined) {

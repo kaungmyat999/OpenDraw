@@ -7,6 +7,22 @@
             }
             scrollbar-width: none;
         }
+        // Plait measures text at a fixed 1.5em line height (measureElement /
+        // getLineHeightByFontSize are not overridable), so a custom line
+        // height changes the rendered height without changing the measured
+        // box. Letting the foreignObject overflow keeps the text fully
+        // visible instead of clipping when the factor exceeds 1.5.
+        foreignObject:has([data-plait-line-height]) {
+            overflow: visible;
+        }
+    }
+}
+
+// Font-size spans pin line-height to 1.5; when the paragraph carries a custom
+// line height they must inherit it instead, or factors below 1.5 do nothing.
+[data-plait-line-height] {
+    [plait-font-size] {
+        line-height: inherit !important;
     }
 }
 
@@ -45,6 +61,17 @@
     }
     [plait-bold] {
         font-weight: bold;
+    }
+    // Node sizes come from measureElement, which only models font-size, bold
+    // and italic. Inline code therefore has to keep the surrounding font
+    // metrics or the element it lives in is measured too narrow — the tint is
+    // drawn with a box-shadow so it reads as padded without taking up layout.
+    code {
+        font-family: inherit;
+        font-size: inherit;
+        background-color: rgba(135, 131, 120, 0.15);
+        box-shadow: 0 0 0 2px rgba(135, 131, 120, 0.15);
+        border-radius: 2px;
     }
     @for $size from 8 through 78 {
         [plait-font-size='#{$size}'] {

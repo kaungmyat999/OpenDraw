@@ -66,6 +66,8 @@ const zhTranslations: Translations = {
   'general.menu': '应用菜单',
   'general.moreOptions': '更多选项',
   'general.duplicate': '复制',
+  'general.group': '组合',
+  'general.ungroup': '取消组合',
   'general.delete': '删除',
 
   'general.copyToClipboard': '复制到剪贴板',
@@ -135,6 +137,7 @@ const zhTranslations: Translations = {
   // Tool popup items
   'popupToolbar.fillColor': '填充颜色',
   'popupToolbar.fontSize': '字号',
+  'popupToolbar.lineHeight': '行高',
   'popupToolbar.fontColor': '字体颜色',
   'popupToolbar.link': '链接',
   'popupToolbar.stroke': '边框',

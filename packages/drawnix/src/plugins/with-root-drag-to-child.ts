@@ -30,6 +30,8 @@ import {
   setMindDragging,
 } from '@plait/mind';
 import { Path } from '@plait/core';
+import { clearMindTopicSizeCache } from '../utils/mind-topic-size';
+import { adoptBranchColorOnMerge } from '../utils/mind-branch-color';
 
 const DRAG_MOVE_BUFFER = 5;
 
@@ -167,6 +169,7 @@ export const withRootDragToChild = (board: PlaitBoard) => {
         board as unknown as PlaitMindBoard,
         root as Parameters<typeof adjustRootToNode>[1]
       );
+      clearMindTopicSizeCache(board, childNode);
 
       // Remove the root from the board first.
       CoreTransforms.removeElements(board, [root]);
@@ -183,6 +186,10 @@ export const withRootDragToChild = (board: PlaitBoard) => {
           insertPath = [...Path.parent(path), childCount];
         }
       }
+
+      // Must run before the insert, while the target root still lists only its
+      // pre-existing children, so their colours are what we compare against.
+      adoptBranchColorOnMerge(board, childNode, insertPath);
 
       Transforms.insertNode(board, childNode, insertPath);
       Transforms.addSelectionWithTemporaryElements(board, [childNode]);

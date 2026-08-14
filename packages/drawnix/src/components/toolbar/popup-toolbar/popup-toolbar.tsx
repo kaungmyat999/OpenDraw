@@ -33,10 +33,11 @@ import {
   isDrawElementsIncludeText,
   PlaitDrawElement,
 } from '@plait/draw';
-import { CustomText, StrokeStyle } from '@plait/common';
+import { CustomText, StrokeStyle, getFirstTextEditor } from '@plait/common';
 import { getTextMarksByElement } from '@plait/text-plugins';
 import { PopupFontColorButton } from './font-color-button';
 import { PopupFontSizeControl } from './font-size-control';
+import { PopupLineHeightControl } from './line-height-control';
 import { PopupStrokeButton } from './stroke-button';
 import { PopupFillButton } from './fill-button';
 import { isWhite, removeHexAlpha } from '../../../utils/color';
@@ -72,6 +73,7 @@ export const PopupToolbar = () => {
     hasStroke?: boolean;
     hasStrokeStyle?: boolean;
     marks?: Omit<CustomText, 'text'>;
+    lineHeight?: number;
     // Line state
     isLine?: boolean;
     source?: ArrowLineHandle;
@@ -191,6 +193,14 @@ export const PopupToolbar = () => {
                 title={t('popupToolbar.fontSize')}
               />
             )}
+            {state.hasText && (
+              <PopupLineHeightControl
+                board={board}
+                key={'line-height'}
+                currentLineHeight={state.lineHeight}
+                title={t('popupToolbar.lineHeight')}
+              />
+            )}
             {state.hasFontColor && (
               <PopupFontColorButton
                 board={board}
@@ -284,7 +294,12 @@ export const getDrawElementState = (
   const marks: Omit<CustomText, 'text'> = getTextMarksByElement(element);
   return {
     fill: element.fill,
-    strokeColor: getStrokeColorByDrawElement(board, element),
+    // A text element has no border until one is asked for, so report its own
+    // strokeColor rather than the library default — otherwise the swatch would
+    // advertise a black border that is not drawn.
+    strokeColor: PlaitDrawElement.isText(element)
+      ? element.strokeColor
+      : getStrokeColorByDrawElement(board, element),
     strokeStyle: getStrokeStyleByElement(board, element),
     marks,
     source: element?.source || {},
@@ -294,10 +309,23 @@ export const getDrawElementState = (
 
 export const getElementState = (board: PlaitBoard) => {
   const selectedElement = getSelectedElements(board)[0];
-  if (MindElement.isMindElement(board, selectedElement)) {
-    return getMindElementState(board, selectedElement);
+  const state = MindElement.isMindElement(board, selectedElement)
+    ? getMindElementState(board, selectedElement)
+    : getDrawElementState(board, selectedElement as PlaitDrawElement);
+  return { ...state, lineHeight: getLineHeightState(selectedElement) };
+};
+
+const getLineHeightState = (element: PlaitElement): number | undefined => {
+  try {
+    const editor = getFirstTextEditor(element);
+    const paragraph = editor?.children[0] as
+      | { lineHeight?: number }
+      | undefined;
+    return paragraph?.lineHeight;
+  } catch {
+    // Elements without a text manage (e.g. images) throw — no line height.
+    return undefined;
   }
-  return getDrawElementState(board, selectedElement as PlaitDrawElement);
 };
 
 export const hasFillProperty = (board: PlaitBoard, element: PlaitElement) => {
@@ -327,9 +355,10 @@ export const hasStrokeProperty = (board: PlaitBoard, element: PlaitElement) => {
   }
   if (PlaitDrawElement.isDrawElement(element)) {
     return (
+      // Text is included so it can be given a border box — withTextBorder
+      // renders one whenever strokeColor is set.
       (PlaitDrawElement.isShapeElement(element) &&
-        !PlaitDrawElement.isImage(element) &&
-        !PlaitDrawElement.isText(element)) ||
+        !PlaitDrawElement.isImage(element)) ||
       PlaitDrawElement.isArrowLine(element) ||
       PlaitDrawElement.isVectorLine(element) ||
       PlaitDrawElement.isTable(element)

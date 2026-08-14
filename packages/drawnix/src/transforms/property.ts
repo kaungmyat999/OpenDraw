@@ -22,6 +22,12 @@ import {
   isClosedElement,
 } from '../utils/property';
 import { DEFAULT_FONT_SIZE, TextTransforms } from '@plait/text-plugins';
+import { getTextEditors } from '@plait/common';
+import {
+  Editor as SlateEditor,
+  Element as SlateElement,
+  Transforms as SlateTransforms,
+} from 'slate';
 
 export const setFillColorOpacity = (board: PlaitBoard, fillOpacity: number) => {
   PropertyTransforms.setFillColor(board, null, {
@@ -171,4 +177,29 @@ export const setTextFontSize = (board: PlaitBoard, size: number) => {
     return;
   }
   TextTransforms.setFontSize(board, String(size) as any, DEFAULT_FONT_SIZE);
+};
+
+/**
+ * Sets the line height (as a unitless factor) on the paragraph of every
+ * selected element's text, mirroring how TextTransforms.setTextAlign stores
+ * paragraph-level properties. Stored on the paragraph, it travels with the
+ * element's text data and persists in the document.
+ *
+ * Passing null restores the library default (1.5em via the plait styles).
+ */
+export const setTextLineHeight = (
+  board: PlaitBoard,
+  lineHeight: number | null
+) => {
+  const editors = getTextEditors(board);
+  editors?.forEach((editor) => {
+    SlateTransforms.setNodes(
+      editor,
+      { lineHeight } as Partial<SlateElement>,
+      {
+        match: (node) =>
+          SlateElement.isElement(node) && SlateEditor.isBlock(editor, node),
+      }
+    );
+  });
 };

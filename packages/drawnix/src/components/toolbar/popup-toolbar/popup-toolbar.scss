@@ -1,4 +1,31 @@
 .popup-toolbar {
+    .popup-line-height {
+        height: var(--lg-button-size);
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        padding: 0 6px;
+        cursor: pointer;
+        border-radius: var(--border-radius-sm);
+        background-color: var(--color-surface-secondary-container);
+        color: var(--color-on-surface);
+        &:hover {
+            background-color: var(--color-surface-primary-container);
+        }
+        .popup-line-height__icon {
+            display: flex;
+            align-items: center;
+            svg {
+                width: 14px;
+                height: 14px;
+            }
+        }
+        .popup-line-height__value {
+            font-size: 12px;
+            min-width: 20px;
+            text-align: center;
+        }
+    }
     .popup-font-size {
         height: var(--lg-button-size);
         display: flex;

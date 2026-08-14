@@ -506,6 +506,27 @@ export const MergeIcon = createIcon(
   </svg>
 );
 
+export const LineHeightIcon = createIcon(
+  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor">
+    <path strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"
+      d="M4.167 3.333 2.5 5m1.667-1.667L5.833 5M4.167 3.333v13.334m0 0L2.5 15m1.667 1.667L5.833 15M9.167 5H17.5M9.167 10H17.5M9.167 15H17.5" />
+  </svg>
+);
+
+export const GroupIcon = createIcon(
+  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor">
+    <path strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"
+      d="M2.5 5.833V2.5h3.333M14.167 2.5H17.5v3.333M17.5 14.167V17.5h-3.333M5.833 17.5H2.5v-3.333M6.667 6.667h4.166v4.166H6.667zM9.167 9.167h4.166v4.166H9.167z" />
+  </svg>
+);
+
+export const UngroupIcon = createIcon(
+  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor">
+    <path strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"
+      d="M2.5 5V2.5H5M15 2.5h2.5V5M17.5 15v2.5H15M5 17.5H2.5V15M6.25 6.25h3.333v3.333H6.25zM10.417 10.417h3.333v3.333h-3.333z" />
+  </svg>
+);
+
 export const RenameIcon = createIcon(
   <svg viewBox="0 0 20 20" fill="none" stroke="currentColor">
     <path strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"

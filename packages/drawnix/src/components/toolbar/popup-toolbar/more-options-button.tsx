@@ -6,12 +6,22 @@ import {
   CoreTransforms,
   PlaitBoard,
   Transforms,
+  canAddGroup,
+  canRemoveGroup,
   deleteFragment,
   duplicateElements,
   getRectangleByElements,
   getSelectedElements,
 } from '@plait/core';
-import { DetachIcon, DuplicateIcon, MergeIcon, MoreOptionsIcon, TrashIcon } from '../../icons';
+import {
+  DetachIcon,
+  DuplicateIcon,
+  GroupIcon,
+  MergeIcon,
+  MoreOptionsIcon,
+  TrashIcon,
+  UngroupIcon,
+} from '../../icons';
 import { Popover, PopoverContent, PopoverTrigger } from '../../popover/popover';
 import Menu from '../../menu/menu';
 import MenuItem from '../../menu/menu-item';
@@ -107,6 +117,11 @@ export const MoreOptionsButton: React.FC<MoreOptionsButtonProps> = ({
   const canCopyAny = canCopySvg || canCopyPng;
   const showDetach = canDetach(board);
   const showMerge = canMerge(board);
+  // Grouping itself is plait's (withGroup + Transforms.addGroup/removeGroup);
+  // these entries just surface it, since the mod+g / mod+shift+g hotkeys it
+  // registers are otherwise undiscoverable.
+  const showGroup = canAddGroup(board);
+  const showUngroup = canRemoveGroup(board);
 
   return (
     <Popover
@@ -160,6 +175,32 @@ export const MoreOptionsButton: React.FC<MoreOptionsButtonProps> = ({
               aria-label={t('mind.detach')}
             >
               {t('mind.detach')}
+            </MenuItem>
+          )}
+          {showGroup && (
+            <MenuItem
+              onSelect={() => {
+                Transforms.addGroup(board);
+                setMenuOpen(false);
+              }}
+              icon={GroupIcon}
+              shortcut={getShortcutKey('CtrlOrCmd+G')}
+              aria-label={t('general.group')}
+            >
+              {t('general.group')}
+            </MenuItem>
+          )}
+          {showUngroup && (
+            <MenuItem
+              onSelect={() => {
+                Transforms.removeGroup(board);
+                setMenuOpen(false);
+              }}
+              icon={UngroupIcon}
+              shortcut={getShortcutKey('CtrlOrCmd+Shift+G')}
+              aria-label={t('general.ungroup')}
+            >
+              {t('general.ungroup')}
             </MenuItem>
           )}
           <MenuItem

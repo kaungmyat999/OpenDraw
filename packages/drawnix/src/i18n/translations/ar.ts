@@ -66,6 +66,8 @@ const arTranslations: Translations = {
     "general.menu": "قائمة التطبيق",
     "general.moreOptions": "خيارات إضافية",
     "general.duplicate": "تكرار",
+    "general.group": "تجميع",
+    "general.ungroup": "إلغاء التجميع",
     "general.delete": "حذف",
 
     "general.copyToClipboard": "نسخ إلى الحافظة",
@@ -136,6 +138,7 @@ const arTranslations: Translations = {
     // Tool popup items
     "popupToolbar.fillColor": "لون التعبئة",
     "popupToolbar.fontSize": "حجم الخط",
+    "popupToolbar.lineHeight": "تباعد الأسطر",
     "popupToolbar.fontColor": "لون الخط",
     "popupToolbar.link": "إدراج رابط",
     "popupToolbar.stroke": "الحد",

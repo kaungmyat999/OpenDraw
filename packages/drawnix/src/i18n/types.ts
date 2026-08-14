@@ -70,6 +70,8 @@ export interface Translations {
   'general.menu': string;
   'general.moreOptions': string;
   'general.duplicate': string;
+  'general.group': string;
+  'general.ungroup': string;
   'general.delete': string;
   'general.copyToClipboard': string;
   'general.copyToClipboard.svg': string;
@@ -139,6 +141,7 @@ export interface Translations {
   // Tool popup items
   'popupToolbar.fillColor': string;
   'popupToolbar.fontSize': string;
+  'popupToolbar.lineHeight': string;
   'popupToolbar.fontColor': string;
   'popupToolbar.link': string;
   'popupToolbar.stroke': string;

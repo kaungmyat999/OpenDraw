@@ -3,6 +3,13 @@ import type { PlaitTextBoard, TextProps } from '@plait/common';
 import { PlaitDrawElement } from '@plait/draw';
 
 export const TEXT_TOOL_FONT_CLASS_NAME = 'text-tool-font';
+export const PADDED_PASTE_TEXT_CLASS_NAME = 'padded-paste-text-frame';
+const PADDED_PASTE_TEXT_PROPERTY = 'paddedPasteTextFrame';
+
+// Must match the `.text-tool-font .plait-text-container` rule in
+// styles/index.scss — measurement (canvas) and rendering (CSS) have to agree
+// or text element boxes won't fit their content.
+export const TEXT_TOOL_FONT_FAMILY = `'Patrick Hand SC', cursive`;
 
 // The "Text" tool creates a standalone PlaitDrawElement (shape: text) that
 // shares the same generic text renderer/CSS class as mind topics and shape
@@ -40,6 +47,13 @@ const markIfTextToolElement = (board: PlaitBoard, container: Element) => {
       const element = getElementById(board, id);
       if (element && PlaitDrawElement.isText(element)) {
         container.classList.add(TEXT_TOOL_FONT_CLASS_NAME);
+        if (
+          (element as typeof element & {
+            [PADDED_PASTE_TEXT_PROPERTY]?: boolean;
+          })[PADDED_PASTE_TEXT_PROPERTY]
+        ) {
+          container.classList.add(PADDED_PASTE_TEXT_CLASS_NAME);
+        }
       }
       return;
     }

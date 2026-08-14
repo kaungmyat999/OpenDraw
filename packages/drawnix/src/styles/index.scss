@@ -6,6 +6,17 @@
 // see plugins/with-text-font.tsx for how this class gets applied.
 .text-tool-font .plait-text-container {
     font-family: 'Patrick Hand SC', cursive;
+    // Patrick Hand SC's visual glyph bounds sit high inside its CSS line box.
+    // Offset the rendered content (without changing element measurements) so
+    // the visible letters are optically centered in the blue selection box.
+    transform: translateY(0.7em);
+}
+
+// The text rectangle has four extra pixels on each horizontal side for pasted
+// text frames. Shift the rendered content by the same amount so the resulting
+// 8px left/right inset is visually even.
+.padded-paste-text-frame .plait-text-container {
+    transform: translate(4px, 0.7em);
 }
 
 .drawnix {
@@ -165,4 +176,3 @@
         cursor: inherit !important;
     }
 }
-

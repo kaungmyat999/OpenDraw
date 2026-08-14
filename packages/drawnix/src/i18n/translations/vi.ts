@@ -66,6 +66,8 @@ const viTranslations: Translations = {
     'general.menu': 'Menu ứng dụng',
     'general.moreOptions': 'Tùy chọn khác',
     'general.duplicate': 'Nhân bản',
+    'general.group': 'Nhóm',
+    'general.ungroup': 'Bỏ nhóm',
     'general.delete': 'Xóa',
 
     'general.copyToClipboard': 'Sao chép vào bộ nhớ tạm',
@@ -140,6 +142,7 @@ const viTranslations: Translations = {
     // Tool popup items
     'popupToolbar.fillColor': 'Màu tô',
     'popupToolbar.fontSize': 'Cỡ chữ',
+    'popupToolbar.lineHeight': 'Giãn dòng',
     'popupToolbar.fontColor': 'Màu chữ',
     'popupToolbar.link': 'Chèn liên kết',
     'popupToolbar.stroke': 'Đường viền',

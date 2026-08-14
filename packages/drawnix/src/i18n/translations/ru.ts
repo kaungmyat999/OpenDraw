@@ -66,6 +66,8 @@ const ruTranslations: Translations = {
   'general.menu': 'Меню приложения',
   'general.moreOptions': 'Дополнительно',
   'general.duplicate': 'Дублировать',
+  'general.group': 'Сгруппировать',
+  'general.ungroup': 'Разгруппировать',
   'general.delete': 'Удалить',
 
   'general.copyToClipboard': 'Копировать в буфер обмена',
@@ -142,6 +144,7 @@ const ruTranslations: Translations = {
   // Tool popup items
   'popupToolbar.fillColor': 'Цвет заливки',
   'popupToolbar.fontSize': 'Размер шрифта',
+  'popupToolbar.lineHeight': 'Межстрочный интервал',
   'popupToolbar.fontColor': 'Цвет текста',
   'popupToolbar.link': 'Вставить ссылку',
   'popupToolbar.stroke': 'Контур',

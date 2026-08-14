@@ -66,6 +66,8 @@ const enTranslations: Translations = {
   'general.menu': 'App Menu',
   'general.moreOptions': 'More Options',
   'general.duplicate': 'Duplicate',
+  'general.group': 'Group',
+  'general.ungroup': 'Ungroup',
   'general.delete': 'Delete',
   'general.copyToClipboard': 'Copy to Clipboard',
   'general.copyToClipboard.svg': 'SVG',
@@ -138,6 +140,7 @@ const enTranslations: Translations = {
   // Tool popup items
   'popupToolbar.fillColor': 'Fill Color',
   'popupToolbar.fontSize': 'Font Size',
+  'popupToolbar.lineHeight': 'Line Height',
   'popupToolbar.fontColor': 'Font Color',
   'popupToolbar.link': 'Insert Link',
   'popupToolbar.stroke': 'Stroke',

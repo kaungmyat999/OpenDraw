@@ -19,9 +19,13 @@ import MobileDetect from 'mobile-detect';
 import { withMindExtend } from './plugins/with-mind-extend';
 import { withTextFont } from './plugins/with-text-font';
 import { withTextDefaultFontSize } from './plugins/with-text-default-font-size';
+import { withPasteTextFit } from './plugins/with-paste-text-fit';
 import { withMindDeletePromote } from './plugins/with-mind-delete-promote';
+import { withMindDuplicateSelected } from './plugins/with-mind-duplicate-selected';
 import { withRootDragToChild } from './plugins/with-root-drag-to-child';
 import { withStandardRoot } from './plugins/with-standard-root';
+import { withTextBorder } from './plugins/with-text-border';
+import { withMindArrowBinding } from './plugins/with-mind-arrow-binding';
 import { withCommonPlugin } from './plugins/with-common';
 import { CreationToolbar } from './components/toolbar/creation-toolbar';
 import { ZoomToolbar } from './components/toolbar/zoom-toolbar';
@@ -159,14 +163,18 @@ export const Drawnix: React.FC<DrawnixProps> = ({
     withMindExtend,
     withTextFont,
     withTextDefaultFontSize,
+    withPasteTextFit,
     withStandardRoot,
     withMindDeletePromote,
+    withMindDuplicateSelected,
     withCommonPlugin,
     buildDrawnixHotkeyPlugin(updateAppState, () => onSaveRef.current?.()),
     withFreehand,
     buildPencilPlugin(updateAppState),
     buildTextLinkPlugin(updateAppState),
     withRootDragToChild,
+    withTextBorder,
+    withMindArrowBinding,
   ];
 
   const containerRef = useRef<HTMLDivElement>(null);
